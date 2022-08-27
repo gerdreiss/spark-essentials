@@ -16,9 +16,10 @@ object DataFramesBasics extends App {
     .format("json")
     .option("inferSchema", "true")
     .load("src/main/resources/data/cars.json")
+    .cache()
 
   // showing a DF
-  firstDF.show()
+  firstDF.show(false)
   firstDF.printSchema()
 
   // get rows
@@ -36,7 +37,7 @@ object DataFramesBasics extends App {
     StructField("Horsepower", LongType),
     StructField("Weight_in_lbs", LongType),
     StructField("Acceleration", DoubleType),
-    StructField("Year", StringType),
+    StructField("Year", DateType),
     StructField("Origin", StringType)
   ))
 
@@ -46,8 +47,12 @@ object DataFramesBasics extends App {
   // read a DF with your schema
   val carsDFWithSchema = spark.read
     .format("json")
-    .schema(carsDFSchema)
+    .schema(carsSchema)
     .load("src/main/resources/data/cars.json")
+    .cache()
+
+  carsDFWithSchema.show(false)
+  carsDFWithSchema.printSchema()
 
   // create rows by hand
   val myRow = Row("chevrolet chevelle malibu",18,8,307,130,3504,12.0,"1970-01-01","USA")
