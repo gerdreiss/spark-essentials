@@ -3,6 +3,8 @@ package lessons.part2dataframes
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.types._
 
+import Schemas._
+
 object DataSources extends App {
 
   val spark = SparkSession.builder()
@@ -10,17 +12,6 @@ object DataSources extends App {
     .config("spark.master", "local")
     .getOrCreate()
 
-  val carsSchema = StructType(Array(
-    StructField("Name", StringType),
-    StructField("Miles_per_Gallon", DoubleType),
-    StructField("Cylinders", LongType),
-    StructField("Displacement", DoubleType),
-    StructField("Horsepower", LongType),
-    StructField("Weight_in_lbs", LongType),
-    StructField("Acceleration", DoubleType),
-    StructField("Year", DateType),
-    StructField("Origin", StringType)
-  ))
 
   /*
     Reading a DF:
