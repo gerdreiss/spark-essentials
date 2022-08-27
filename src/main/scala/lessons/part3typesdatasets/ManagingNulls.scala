@@ -1,4 +1,4 @@
-package part3typesdatasets
+package lessons.part3typesdatasets
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._

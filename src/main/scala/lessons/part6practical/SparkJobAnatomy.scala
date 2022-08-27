@@ -1,4 +1,4 @@
-package part6practical
+package lessons.part6practical
 
 import org.apache.spark.sql.SparkSession
 

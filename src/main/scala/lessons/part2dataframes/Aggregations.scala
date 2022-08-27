@@ -1,4 +1,4 @@
-package part2dataframes
+package lessons.part2dataframes
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
@@ -17,6 +17,8 @@ object Aggregations extends App {
 
   // counting
   val genresCountDF = moviesDF.select(count(col("Major_Genre"))) // all the values except null
+  genresCountDF.show()
+
   moviesDF.selectExpr("count(Major_Genre)")
 
   // counting all

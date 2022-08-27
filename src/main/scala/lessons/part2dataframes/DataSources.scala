@@ -1,4 +1,4 @@
-package part2dataframes
+package lessons.part2dataframes
 
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.types._
