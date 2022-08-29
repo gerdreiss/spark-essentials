@@ -23,7 +23,6 @@ object DataSources extends App {
     .json("src/main/resources/data/cars.json")
     // .filter(col("Origin") =!= "USA") // filter out American cars
     // .filter(col("Year") > lit("1979-12-31")) // filter out cars made in or after 1980
-    // .sort($"Horsepower".desc) // sort by weight
     .withColumnRenamed("Name", "name")
     .withColumnRenamed("Miles_per_Gallon", "mpg")
     .withColumnRenamed("Cylinders", "cylinders")
@@ -36,6 +35,8 @@ object DataSources extends App {
     .as[Schemas.Car] // convert to a strongly-typed case class
     .filter(_.origin != "USA") // filter out American cars
     .filter(_.year.isAfter(LocalDate.of(1979, Month.DECEMBER, 31))) // filter out cars made after the year 1979
+    // .sort($"Horsepower".desc) // sort by weight
+    .orderBy($"horsepower".desc) // sort by weight
     .cache()
 
   carsDS.show(carsDS.count().intValue(), truncate = false)
