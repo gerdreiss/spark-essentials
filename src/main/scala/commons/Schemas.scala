@@ -1,9 +1,11 @@
-package lessons.part2dataframes
+package commons
 
 import org.apache.spark.sql.types._
 
+import java.time.LocalDate
+
 object Schemas {
-  val carsSchema: StructType =
+  val cars: StructType =
     StructType(
       Array(
         StructField("Name", StringType),
@@ -18,4 +20,15 @@ object Schemas {
       )
     )
 
+  case class Car(
+      name: String,
+      mpg: Option[Double],
+      cylinders: Option[Long],
+      displacement: Option[Double],
+      horsepower: Option[Long],
+      weight: Option[Long],
+      acceleration: Option[Double],
+      year: LocalDate,
+      origin: String,
+  )
 }

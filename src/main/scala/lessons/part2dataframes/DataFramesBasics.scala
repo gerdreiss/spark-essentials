@@ -1,9 +1,9 @@
 package lessons.part2dataframes
 
+import commons.Schemas
 import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.types._
-
-import Schemas._
+import commons.Schemas._
 
 object DataFramesBasics extends App {
 
@@ -37,7 +37,7 @@ object DataFramesBasics extends App {
   // read a DF with your schema
   val carsDFWithSchema = spark.read
     .format("json")
-    .schema(carsSchema)
+    .schema(Schemas.cars)
     .load("src/main/resources/data/cars.json")
     .cache()
 

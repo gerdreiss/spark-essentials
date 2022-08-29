@@ -3,7 +3,7 @@ package lessons.part2dataframes
 import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.types._
 
-import Schemas._
+import commons.Schemas
 
 object DataSources extends App {
 
@@ -22,7 +22,7 @@ object DataSources extends App {
    */
   val carsDF = spark.read
     .format("json")
-    .schema(carsSchema) // enforce a schema
+    .schema(Schemas.cars) // enforce a schema
     .option("mode", "failFast") // dropMalformed, permissive (default)
     .option("path", "src/main/resources/data/cars.json")
     .load()
@@ -51,7 +51,7 @@ object DataSources extends App {
 
   // JSON flags
   spark.read
-    .schema(carsSchema)
+    .schema(Schemas.cars)
     .option("dateFormat", "YYYY-MM-dd") // couple with schema; if Spark fails parsing, it will put null
     .option("allowSingleQuotes", "true")
     .option("compression", "uncompressed") // bzip2, gzip, lz4, snappy, deflate
