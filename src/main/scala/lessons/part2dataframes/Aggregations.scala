@@ -5,7 +5,8 @@ import org.apache.spark.sql.functions._
 
 object Aggregations extends App {
 
-  val spark = SparkSession.builder()
+  val spark = SparkSession
+    .builder()
     .appName("Aggregations and Grouping")
     .config("spark.master", "local")
     .getOrCreate()
@@ -13,11 +14,14 @@ object Aggregations extends App {
   val moviesDF = spark.read
     .option("inferSchema", "true")
     .json("src/main/resources/data/movies.json")
+    .cache()
 
+  moviesDF.printSchema()
 
   // counting
-  val genresCountDF = moviesDF.select(count(col("Major_Genre"))) // all the values except null
-  genresCountDF.show()
+  moviesDF
+    .select(count(col("Major_Genre"))) // all the values except null
+    .show()
 
   moviesDF.selectExpr("count(Major_Genre)")
 
@@ -28,54 +32,59 @@ object Aggregations extends App {
   moviesDF.select(countDistinct(col("Major_Genre"))).show()
 
   // approximate count
-  moviesDF.select(approx_count_distinct(col("Major_Genre")))
+  moviesDF.select(approx_count_distinct(col("Major_Genre"))).show()
 
   // min and max
-  val minRatingDF = moviesDF.select(min(col("IMDB_Rating")))
-  moviesDF.selectExpr("min(IMDB_Rating)")
+  moviesDF
+    .select(min(col("IMDB_Rating")))
+    .show()
+
+  moviesDF
+    .selectExpr("min(IMDB_Rating)")
+    .show()
 
   // sum
   moviesDF.select(sum(col("US_Gross")))
   moviesDF.selectExpr("sum(US_Gross)")
 
   // avg
-  moviesDF.select(avg(col("Rotten_Tomatoes_Rating")))
-  moviesDF.selectExpr("avg(Rotten_Tomatoes_Rating)")
+  moviesDF.select(avg(col("Rotten_Tomatoes_Rating"))).show()
+  moviesDF.selectExpr("avg(Rotten_Tomatoes_Rating)").show()
 
   // data science
   moviesDF.select(
     mean(col("Rotten_Tomatoes_Rating")),
-    stddev(col("Rotten_Tomatoes_Rating"))
+    stddev(col("Rotten_Tomatoes_Rating")),
   )
 
   // Grouping
 
-  val countByGenreDF = moviesDF
+  moviesDF
     .groupBy(col("Major_Genre")) // includes null
-    .count()  // select count(*) from moviesDF group by Major_Genre
+    .count()                     // select count(*) from moviesDF group by Major_Genre
+    .show()
 
-  val avgRatingByGenreDF = moviesDF
+  moviesDF
     .groupBy(col("Major_Genre"))
     .avg("IMDB_Rating")
+    .show()
 
-  val aggregationsByGenreDF = moviesDF
+  moviesDF
     .groupBy(col("Major_Genre"))
     .agg(
-      count("*").as("N_Movies"),
-      avg("IMDB_Rating").as("Avg_Rating")
+      count("*").as("Num_Movies"),
+      avg("IMDB_Rating").as("Avg_Rating"),
     )
     .orderBy(col("Avg_Rating"))
+    .show()
 
-
-  /**
-    * Exercises
+  /** Exercises
     *
     * 1. Sum up ALL the profits of ALL the movies in the DF
     * 2. Count how many distinct directors we have
     * 3. Show the mean and standard deviation of US gross revenue for the movies
     * 4. Compute the average IMDB rating and the average US gross revenue PER DIRECTOR
     */
-
 
   // 1
   moviesDF
@@ -89,17 +98,19 @@ object Aggregations extends App {
     .show()
 
   // 3
-  moviesDF.select(
-    mean("US_Gross"),
-    stddev("US_Gross")
-  ).show()
+  moviesDF
+    .select(
+      mean("US_Gross"),
+      stddev("US_Gross"),
+    )
+    .show()
 
   // 4
   moviesDF
     .groupBy("Director")
     .agg(
       avg("IMDB_Rating").as("Avg_Rating"),
-      sum("US_Gross").as("Total_US_Gross")
+      sum("US_Gross").as("Total_US_Gross"),
     )
     .orderBy(col("Avg_Rating").desc_nulls_last)
     .show()
