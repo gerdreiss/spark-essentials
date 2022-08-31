@@ -126,7 +126,10 @@ object Joins extends App {
     .groupBy("emp_no", "title")
     .agg(max("to_date"))
 
-  val bestPaidEmployeesDF = employeesSalariesDF.orderBy(col("max_salary").desc).limit(10)
+  val bestPaidEmployeesDF = employeesSalariesDF
+    .orderBy(col("max_salary").desc)
+    .limit(10)
+
   val bestPaidJobsDF      = bestPaidEmployeesDF.join(mostRecentJobTitlesDF, "emp_no")
 
   bestPaidJobsDF.show()
