@@ -88,7 +88,7 @@ object CommonTypes extends App {
   def getCarNames: List[String] =
     List("Volkswagen", "Mercedes-Benz", "Ford")
   def getCarNamesRegex: String  =
-    getCarNames.map(_.toLowerCase()).mkString("|") // volskwagen|mercedes-benz|ford
+    getCarNames.map(_.toLowerCase()).mkString("|") // volkswagen|mercedes-benz|ford
 
   // version 1 - regex
   carsDF

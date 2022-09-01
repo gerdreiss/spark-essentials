@@ -3,7 +3,6 @@ package lessons.part2dataframes
 import commons.Schemas
 import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.types._
-import commons.Schemas._
 
 object DataFramesBasics extends App {
 
