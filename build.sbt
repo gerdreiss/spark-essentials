@@ -6,7 +6,7 @@ scalaVersion := "2.13.8"
 
 val sparkVersion    = "3.3.0"
 val vegasVersion    = "0.3.11"
-val postgresVersion = "42.2.26"
+val postgresVersion = "42.5.0"
 
 scalaVersion      := "2.13.8"
 semanticdbEnabled := true
