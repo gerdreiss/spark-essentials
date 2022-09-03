@@ -1,11 +1,12 @@
 package lessons.part4sql
 
-import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{ DataFrame, SaveMode, SparkSession }
 
 object SparkSql extends App {
 
-  val spark = SparkSession.builder()
+  val spark = SparkSession
+    .builder()
     .appName("Spark SQL Practice")
     .config("spark.master", "local")
     .config("spark.sql.warehouse.dir", "src/main/resources/warehouse")
@@ -16,29 +17,27 @@ object SparkSql extends App {
   val carsDF = spark.read
     .option("inferSchema", "true")
     .json("src/main/resources/data/cars.json")
+    .cache()
 
   // regular DF API
   carsDF.select(col("Name")).where(col("Origin") === "USA")
 
   // use Spark SQL
   carsDF.createOrReplaceTempView("cars")
-  val americanCarsDF = spark.sql(
-    """
-      |select Name from cars where Origin = 'USA'
-    """.stripMargin)
+  spark.sql("select Name from cars where Origin = 'USA'").show(false)
 
   // we can run ANY SQL statement
   spark.sql("create database rtjvm")
   spark.sql("use rtjvm")
-  val databasesDF = spark.sql("show databases")
+  spark.sql("show databases")
 
   // transfer tables from a DB to Spark tables
-  val driver = "org.postgresql.Driver"
-  val url = "jdbc:postgresql://localhost:5432/rtjvm"
-  val user = "docker"
+  val driver   = "org.postgresql.Driver"
+  val url      = "jdbc:postgresql://localhost:5432/rtjvm"
+  val user     = "docker"
   val password = "docker"
 
-  def readTable(tableName: String) = spark.read
+  def readTable(tableName: String): DataFrame = spark.read
     .format("jdbc")
     .option("driver", driver)
     .option("url", url)
@@ -47,28 +46,22 @@ object SparkSql extends App {
     .option("dbtable", s"public.$tableName")
     .load()
 
-  def transferTables(tableNames: List[String], shouldWriteToWarehouse: Boolean = false) = tableNames.foreach { tableName =>
-    val tableDF = readTable(tableName)
-    tableDF.createOrReplaceTempView(tableName)
+  def transferTables(tableNames: List[String], shouldWriteToWarehouse: Boolean = false): Unit =
+    tableNames.foreach { tableName =>
+      val tableDF = readTable(tableName)
+      tableDF.createOrReplaceTempView(tableName)
 
-    if (shouldWriteToWarehouse) {
-      tableDF.write
-        .mode(SaveMode.Overwrite)
-        .saveAsTable(tableName)
+      if (shouldWriteToWarehouse) {
+        tableDF.write
+          .mode(SaveMode.Overwrite)
+          .saveAsTable(tableName)
+      }
     }
-  }
 
-  transferTables(List(
-    "employees",
-    "departments",
-    "titles",
-    "dept_emp",
-    "salaries",
-    "dept_manager")
-  )
+  transferTables(List("employees", "departments", "titles", "dept_emp", "salaries", "dept_manager"))
 
   // read DF from loaded Spark tables
-  val employeesDF2 = spark.read.table("employees")
+  spark.read.table("employees")
 
   /**
     * Exercises
@@ -83,6 +76,7 @@ object SparkSql extends App {
   val moviesDF = spark.read
     .option("inferSchema", "true")
     .json("src/main/resources/data/movies.json")
+    .cache()
 
   moviesDF.write
     .mode(SaveMode.Overwrite)
@@ -92,8 +86,8 @@ object SparkSql extends App {
   spark.sql(
     """
       |select count(*)
-      |from employees
-      |where hire_date > '1999-01-01' and hire_date < '2000-01-01'
+      |  from employees
+      | where hire_date > '1999-01-01' and hire_date < '2000-01-01'
     """.stripMargin
   )
 
@@ -101,26 +95,28 @@ object SparkSql extends App {
   spark.sql(
     """
       |select de.dept_no, avg(s.salary)
-      |from employees e, dept_emp de, salaries s
-      |where e.hire_date > '1999-01-01' and e.hire_date < '2000-01-01'
-      | and e.emp_no = de.emp_no
-      | and e.emp_no = s.emp_no
-      |group by de.dept_no
+      |  from employees e, dept_emp de, salaries s
+      | where e.hire_date > '1999-01-01' and e.hire_date < '2000-01-01'
+      |   and e.emp_no = de.emp_no
+      |   and e.emp_no = s.emp_no
+      | group by de.dept_no
     """.stripMargin
   )
 
   // 4
-  spark.sql(
-    """
+  spark
+    .sql(
+      """
       |select avg(s.salary) payments, d.dept_name
-      |from employees e, dept_emp de, salaries s, departments d
-      |where e.hire_date > '1999-01-01' and e.hire_date < '2000-01-01'
-      | and e.emp_no = de.emp_no
-      | and e.emp_no = s.emp_no
-      | and de.dept_no = d.dept_no
-      |group by d.dept_name
-      |order by payments desc
-      |limit 1
+      |  from employees e, dept_emp de, salaries s, departments d
+      | where e.hire_date > '1999-01-01' and e.hire_date < '2000-01-01'
+      |   and e.emp_no = de.emp_no
+      |   and e.emp_no = s.emp_no
+      |   and de.dept_no = d.dept_no
+      | group by d.dept_name
+      | order by payments desc
+      | limit 1
     """.stripMargin
-  ).show()
+    )
+    .show()
 }
