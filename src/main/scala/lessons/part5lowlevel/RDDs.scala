@@ -118,8 +118,15 @@ object RDDs extends App {
     .json("src/main/resources/data/movies.json")
 
   val moviesRDD = moviesDF
-    .select(col("Title").as("title"), col("Major_Genre").as("genre"), col("IMDB_Rating").as("rating"))
-    .where(col("genre").isNotNull and col("rating").isNotNull)
+    .select(
+      col("Title").as("title"),
+      col("Major_Genre").as("genre"),
+      col("IMDB_Rating").as("rating"),
+    )
+    .where(
+      col("genre").isNotNull and
+        col("rating").isNotNull
+    )
     .as[Movie]
     .rdd
 
