@@ -1,13 +1,15 @@
 package lessons.part5lowlevel
 
-import org.apache.spark.sql.{SaveMode, SparkSession}
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{ SaveMode, SparkSession }
 
 import scala.io.Source
+import scala.util.Using
 
 object RDDs extends App {
 
-  val spark = SparkSession.builder()
+  val spark = SparkSession
+    .builder()
     .appName("Introduction to RDDs")
     .config("spark.master", "local")
     .getOrCreate()
@@ -16,26 +18,33 @@ object RDDs extends App {
   val sc = spark.sparkContext
 
   // 1 - parallelize an existing collection
-  val numbers = 1 to 1000000
+  val numbers    = 1 to 1000000
   val numbersRDD = sc.parallelize(numbers)
 
   // 2 - reading from files
   case class StockValue(symbol: String, date: String, price: Double)
+
   def readStocks(filename: String) =
-    Source.fromFile(filename)
-      .getLines()
-      .drop(1)
-      .map(line => line.split(","))
-      .map(tokens => StockValue(tokens(0), tokens(1), tokens(2).toDouble))
-      .toList
+    Using(Source.fromFile(filename)) {
+      _.getLines().toList.tail
+        .map(_.split(",").toList)
+        .map { case sym :: dt :: pr :: _ =>
+          StockValue(sym, dt, pr.toDouble)
+        }
+    } getOrElse List.empty
 
   val stocksRDD = sc.parallelize(readStocks("src/main/resources/data/stocks.csv"))
 
   // 2b - reading from files
-  val stocksRDD2 = sc.textFile("src/main/resources/data/stocks.csv")
-    .map(line => line.split(","))
-    .filter(tokens => tokens(0).toUpperCase() == tokens(0))
-    .map(tokens => StockValue(tokens(0), tokens(1), tokens(2).toDouble))
+  val stocksRDD2 = sc
+    .textFile("src/main/resources/data/stocks.csv")
+    .map(_.split(",").toList)
+    .filter { case sym :: _ =>
+      sym.toUpperCase() == sym
+    }
+    .map { case sym :: dt :: pr :: _ =>
+      StockValue(sym, dt, pr.toDouble)
+    }
 
   // 3 - read from a DF
   val stocksDF = spark.read
@@ -44,7 +53,7 @@ object RDDs extends App {
     .csv("src/main/resources/data/stocks.csv")
 
   import spark.implicits._
-  val stocksDS = stocksDF.as[StockValue]
+  val stocksDS   = stocksDF.as[StockValue]
   val stocksRDD3 = stocksDS.rdd
 
   // RDD -> DF
@@ -57,7 +66,7 @@ object RDDs extends App {
 
   // distinct
   val msftRDD = stocksRDD.filter(_.symbol == "MSFT") // lazy transformation
-  val msCount = msftRDD.count() // eager ACTION
+  val msCount = msftRDD.count()                      // eager ACTION
 
   // counting
   val companyNamesRDD = stocksRDD.map(_.symbol).distinct() // also lazy
@@ -65,7 +74,7 @@ object RDDs extends App {
   // min and max
   implicit val stockOrdering: Ordering[StockValue] =
     Ordering.fromLessThan[StockValue]((sa: StockValue, sb: StockValue) => sa.price < sb.price)
-  val minMsft = msftRDD.min() // action
+  val minMsft                                      = msftRDD.min() // action
 
   // reduce
   numbersRDD.reduce(_ + _)
@@ -123,8 +132,8 @@ object RDDs extends App {
   // 4
   case class GenreAvgRating(genre: String, rating: Double)
 
-  val avgRatingByGenreRDD = moviesRDD.groupBy(_.genre).map {
-    case (genre, movies) => GenreAvgRating(genre, movies.map(_.rating).sum / movies.size)
+  val avgRatingByGenreRDD = moviesRDD.groupBy(_.genre).map { case (genre, movies) =>
+    GenreAvgRating(genre, movies.map(_.rating).sum / movies.size)
   }
 
   avgRatingByGenreRDD.toDF.show
