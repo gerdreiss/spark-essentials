@@ -1,4 +1,5 @@
 version: "3"
+
 services:
   spark-master:
     image: spark-master:latest
@@ -11,6 +12,7 @@ services:
        - ./data:/opt/spark-data
     environment:
       - "SPARK_LOCAL_IP=spark-master"
+
   spark-worker:
     image: spark-worker:latest
     depends_on:

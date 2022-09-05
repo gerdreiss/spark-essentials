@@ -5,13 +5,16 @@ LABEL version="0.3"
 ENV DAEMON_RUN=true
 ENV SPARK_VERSION=3.3.0
 ENV HADOOP_VERSION=3
+ENV SBT_VERSION=1.7.1
 ENV SCALA_VERSION=2.13.8
 ENV SCALA_HOME=/usr/share/scala
 ENV SPARK_HOME=/spark
 
+# Install various dependencies
 RUN apt-get update && apt-get install -y curl vim wget software-properties-common ssh net-tools ca-certificates jq dbus-x11
 RUN echo exit 0 > /usr/sbin/policy-rc.d
 
+# Scala Installation
 RUN cd "/tmp" && \
     wget --no-verbose "https://downloads.typesafe.com/scala/${SCALA_VERSION}/scala-${SCALA_VERSION}.tgz" && \
     tar xzf "scala-${SCALA_VERSION}.tgz" && \
@@ -25,12 +28,20 @@ RUN cd "/tmp" && \
 RUN apt-get install -y python3 python3-pip python3-numpy python3-matplotlib python3-scipy python3-pandas python3-simpy
 RUN update-alternatives --install "/usr/bin/python" "python" "$(which python3)" 1
 
-#Scala instalation
-RUN export PATH="/usr/local/sbt/bin:$PATH" &&  apt update && apt install ca-certificates wget tar && mkdir -p "/usr/local/sbt" && wget -qO - --no-check-certificate "https://github.com/sbt/sbt/releases/download/v1.7.1/sbt-1.7.1.tgz" | tar xz -C /usr/local/sbt --strip-components=1 && sbt -Dsbt.rootdir=true sbtVersion
+# SBT Installation
+RUN export PATH="/usr/local/sbt/bin:$PATH" && \
+    apt update && \
+    apt install ca-certificates wget tar && \
+    mkdir -p "/usr/local/sbt" && \
+    wget -qO - --no-check-certificate "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" | \
+    tar xz -C /usr/local/sbt --strip-components=1 && \
+    sbt -Dsbt.rootdir=true sbtVersion
 
-RUN wget --no-verbose https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && tar -xvzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz \
-      && mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark \
-      && rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
+# Spark Installation
+RUN wget --no-verbose https://archive.apache.org/dist/spark/spark-${SPARK_VERSION}/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
+    tar -xvzf spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz && \
+    mv spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} spark && \
+    rm spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz
 
 
 
