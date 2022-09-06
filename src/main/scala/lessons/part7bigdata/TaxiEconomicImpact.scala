@@ -60,13 +60,22 @@ object TaxiEconomicImpact {
       .drop("LocationID", "service_zone")
 
     val groupingEstimateEconomicImpactDF = groupAttemptsDF
-      .withColumn("groupedRides", col("total_trips") * percentGroupAttempt)
+      .withColumn(
+        "groupedRides",
+        col("total_trips") * percentGroupAttempt,
+      )
       .withColumn(
         "acceptedGroupedRidesEconomicImpact",
         col("groupedRides") * percentAcceptGrouping * (avgCostReduction - discount),
       )
-      .withColumn("rejectedGroupedRidesEconomicImpact", col("groupedRides") * (1 - percentAcceptGrouping) * extraCost)
-      .withColumn("totalImpact", col("acceptedGroupedRidesEconomicImpact") + col("rejectedGroupedRidesEconomicImpact"))
+      .withColumn(
+        "rejectedGroupedRidesEconomicImpact",
+        col("groupedRides") * (1 - percentAcceptGrouping) * extraCost,
+      )
+      .withColumn(
+        "totalImpact",
+        col("acceptedGroupedRidesEconomicImpact") + col("rejectedGroupedRidesEconomicImpact"),
+      )
 
     val totalEconomicImpactDF = groupingEstimateEconomicImpactDF.select(sum(col("totalImpact")).as("total"))
     // 40k/day = 12 million/year!!!

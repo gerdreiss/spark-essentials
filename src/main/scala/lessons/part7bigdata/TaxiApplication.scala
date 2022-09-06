@@ -151,13 +151,22 @@ object TaxiApplication extends App {
   val avgCostReduction      = 0.6 * taxiDF.select(avg($"total_amount")).as[Double].take(1)(0)
 
   val groupingEstimateEconomicImpactDF = groupAttemptsDF
-    .withColumn("groupedRides", $"total_trips" * percentGroupAttempt)
+    .withColumn(
+      "groupedRides",
+      $"total_trips" * percentGroupAttempt,
+    )
     .withColumn(
       "acceptedGroupedRidesEconomicImpact",
       $"groupedRides" * percentAcceptGrouping * (avgCostReduction - discount),
     )
-    .withColumn("rejectedGroupedRidesEconomicImpact", $"groupedRides" * (1 - percentAcceptGrouping) * extraCost)
-    .withColumn("totalImpact", $"acceptedGroupedRidesEconomicImpact" + $"rejectedGroupedRidesEconomicImpact")
+    .withColumn(
+      "rejectedGroupedRidesEconomicImpact",
+      $"groupedRides" * (1 - percentAcceptGrouping) * extraCost,
+    )
+    .withColumn(
+      "totalImpact",
+      $"acceptedGroupedRidesEconomicImpact" + $"rejectedGroupedRidesEconomicImpact",
+    )
 
   groupingEstimateEconomicImpactDF
     .select(sum($"totalImpact").as("total"))
