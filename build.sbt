@@ -2,13 +2,13 @@ name := "spark-essentials"
 
 version := "0.1"
 
-scalaVersion := "2.13.8"
+scalaVersion := "2.13.9"
 
 val sparkVersion    = "3.3.0"
 val vegasVersion    = "0.3.11"
 val postgresVersion = "42.5.0"
 
-scalaVersion      := "2.13.8"
+scalaVersion      := "2.13.9"
 semanticdbEnabled := true
 semanticdbVersion := scalafixSemanticdb.revision
 scalacOptions ++= Seq("-Ywarn-unused")
